@@ -74,7 +74,11 @@ app.post("/proxy", authenticate, validatePayload, async (req, res) => {
 
     const response = await fetch(process.env.N8N_WEBHOOK_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      },
       body: JSON.stringify({ url, title }),
     });
 
