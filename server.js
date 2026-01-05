@@ -27,13 +27,7 @@ const logger = winston.createLogger({
 
 // Middleware de sécurité
 app.use(helmet());
-app.use(
-  // Supprimer ?
-  cors({
-    origin: ["https://moonk3y.fr"], // Remplace par ton domaine
-    methods: ["POST"],
-  })
-);
+app.use(cors());
 
 // Limite le débit pour éviter les abus
 const limiter = rateLimit({
