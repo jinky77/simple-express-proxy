@@ -68,52 +68,23 @@ app.get("/health", (req, res) => {
 app.post("/proxy", authenticate, validatePayload, async (req, res) => {
   try {
     const { url, title } = req.body;
-    logger.info(
-      `Requête reçue depuis ${req.ip} | URL: ${url} | Titre: ${title}`
-    );
-
     const response = await fetch(process.env.N8N_WEBHOOK_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url, title }),
     });
 
-    // Logs détaillés de la réponse
-    logger.info(
-      `Réponse de n8n: Status ${response.status} - ${response.statusText}`
-    );
-
     if (!response.ok) {
-      const errorDetails = await response.text(); // Récupère le corps de la réponse
-      logger.error(`
-        Erreur n8n depuis ${req.ip}:
-        - Status: ${response.status}
-        - StatusText: ${response.statusText}
-        - Réponse: ${errorDetails}
-        - Headers: ${JSON.stringify(response.headers)}
-      `);
-      throw new Error(`Erreur n8n: ${response.status} - ${errorDetails}`);
+      throw new Error(
+        `Erreur lors de l'envoi au webhook n8n: ${response.statusText}`
+      );
     }
 
-    const responseData = await response.json(); // Optionnel: log la réponse réussie
-    logger.info(`Succès n8n: ${JSON.stringify(responseData)}`);
-    res.status(200).json({ success: true, data: responseData });
+    logger.info(`Requête réussie depuis ${req.ip}: ${url}`);
+    res.status(200).json({ success: true });
   } catch (error) {
-    logger.error(`
-      Erreur critique depuis ${req.ip}:
-      - Message: ${error.message}
-      - Stack: ${error.stack}
-      - Requête: ${JSON.stringify({ url: req.body.url, title: req.body.title })}
-    `);
-    res.status(500).json({
-      error: "Erreur interne du serveur.",
-      details:
-        process.env.NODE_ENV === "development" ? error.message : undefined,
-    });
+    logger.error(`Erreur depuis ${req.ip}: ${error.message}`);
+    res.status(500).json({ error: "Erreur interne du serveur." });
   }
 });
 
